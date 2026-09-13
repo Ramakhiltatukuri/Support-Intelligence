@@ -20,7 +20,7 @@ export default function AboutPage() {
             To achieve zero-hallucination, we abandoned the standard single-prompt LLM approach. Instead, we built a mathematically verified pipeline where the LLM is tightly constrained.
           </p>
           <ul className="list-disc pl-6 space-y-2 mt-4 text-zinc-400">
-            <li><strong>Classification</strong> is handled by traditional, deterministic Machine Learning (TF-IDF + Logistic Regression).</li>
+            <li><strong>Classification</strong> is handled by a fine-tuned <strong>DistilBERT Transformer</strong>. We strictly enforce data cleanliness and use Weighted Cross-Entropy (Class Weights) to prevent the "Accuracy Paradox" and mathematically protect minority classes (like Product Defects).</li>
             <li><strong>Knowledge</strong> is strictly retrieved from a verified database of 81,000 historical interactions.</li>
             <li><strong>Generation</strong> is restricted to rewriting pre-approved policy abstracts, with no access to external knowledge.</li>
             <li><strong>Verification</strong> is an independent, adversarial step designed solely to catch unsupported claims.</li>
