@@ -41,6 +41,9 @@ backend/models/
 backend/results/
 backend/artifacts/
 *.csv
+!golden_evaluation_dataset.csv
+!dev_evaluation_dataset.csv
+!reports/*.csv
 *.npy
 *.pkl
 *.safetensors
