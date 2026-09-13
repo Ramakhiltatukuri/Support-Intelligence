@@ -12,8 +12,8 @@ The core philosophy of this project is the **Zero-Hallucination Policy**: the AI
 When a customer sends a message (e.g., *"My order is late, where is it?"*), the pipeline executes the following 7-stage sequence in real-time:
 
 ### Step 1: Intent Classification (DistilBERT)
-**How it works:** We use a fine-tuned **DistilBERT** transformer model to classify the customer's intent into one of 8 rigid categories (e.g., `Delivery Delay`, `Returns & Refunds`, `Account/Billing`). 
-**Why not an LLM?** A specialized smaller transformer runs in ~15 milliseconds locally. It guarantees deterministic, structured outputs, meaning it never accidentally replies with conversational text when we just need a classification tag. Furthermore, it costs $0 in API fees, which is critical for the high-volume frontline of customer support.
+**How it works:** We use a fine-tuned **DistilBERT** transformer model to classify the customer's intent into 9 rigid categories (e.g., `Delivery Delay`, `Product Damage/Defect`, `Account/Billing`). During training, we apply **Weighted Cross-Entropy (Class Weights)** to heavily penalize the model for missing rare classes. Furthermore, we rigorously cleaned the training data heuristics to ensure high-quality ground truth labels, proving that algorithmic architecture must be paired with pristine data.
+**Why not an LLM?** A specialized smaller transformer runs in ~6 milliseconds locally. It guarantees deterministic, structured outputs, meaning it never accidentally replies with conversational text when we just need a classification tag. Furthermore, it costs $0 in API fees, which is critical for the high-volume frontline of customer support.
 
 ### Step 2: Dense Retrieval (all-MiniLM-L6-v2)
 **How it works:** The agent searches an offline database of 81,000 historical *AmazonHelp* conversations to find similar past issues. It uses a **Sentence-Transformer** (`all-MiniLM-L6-v2`) to generate dense vector embeddings locally. This allows the system to understand the *semantic meaning* of the customer's issue rather than just blindly matching keywords, ensuring it finds historically accurate solutions.

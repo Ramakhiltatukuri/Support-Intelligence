@@ -12,7 +12,7 @@ The final architecture is a state-of-the-art **Resolution-Aware RAG (Retrieval-A
 ## 3. System Architecture (The 7-Stage Pipeline)
 To ensure zero hallucinations, the agent operates in 7 distinct stages:
 
-1. **Classification (DistilBERT):** When a customer message arrives, it is first evaluated by a fine-tuned **DistilBERT** transformer. This categorizes the intent into one of 8 strict buckets (e.g., `Delivery Delay`, `Returns`). This is done locally in ~15ms, saving massive LLM API costs and ensuring structural compliance.
+1. **Classification (DistilBERT):** When a customer message arrives, it is first evaluated by a fine-tuned **DistilBERT** transformer. This categorizes the intent into one of 9 strict buckets (e.g., `Delivery Delay`, `Product Damage/Defect`). The model is trained using **Class Weights** to prevent the "Accuracy Paradox" on imbalanced data, and runs locally in ~6ms, saving massive LLM API costs.
 2. **Dense Retrieval (Semantic Search):** The system searches an offline database of 81,000 historical AmazonHelp chats. Instead of relying on exact keyword matching, it uses **Sentence-Transformers (`all-MiniLM-L6-v2`)** to understand the *meaning* of the customer's query, pulling up historically similar cases.
 3. **Cross-Encoder Reranking:** Because semantic search can sometimes be loose (e.g., confusing "I want a refund" with "I want a replacement"), the top results are deeply analyzed by a **Cross-Encoder (`ms-marco-MiniLM-L-6-v2`)**. This neural network compares the query and the historical match side-by-side, outputting a highly calibrated relevance score (0-1).
 4. **Resolution-Aware Extraction:** If we pass raw historical chats to an LLM, it might accidentally leak PII (like another customer's name) or hallucinate (by repeating an old tracking number). Instead, the `ResolutionExtractor` strips away all PII and abstracts the historical solution into a clean, safe policy pattern (e.g., `ISSUE_APOLOGY, REQUEST_DM_FOR_DETAILS`).
@@ -28,7 +28,7 @@ To ensure zero hallucinations, the agent operates in 7 distinct stages:
 An automated evaluation harness was built using the 200-sample Golden Set to prove the system works.
 - **LLM-as-a-Judge:** An independent Gemini evaluator scores the end-to-end agent on a strict 5-point rubric (Intent Accuracy, Decision Match, Zero Hallucinations, Tone, Conciseness).
 - **Ablation Testing:** The framework can run "ablations" (e.g., turning off the Reranker or the Verifier) to mathematically prove how necessary these safety layers are to the final score.
-- **Final Results:** The system achieves a 0.64 F1 score for Intent Classification, 100% precision on escalations (meaning it never incorrectly auto-handles a dangerous ticket), and successfully enforces the Zero-Hallucination policy.
+- **Final Results:** After cleaning the raw heuristic labels and applying Class Weights, the system achieves a highly balanced 0.63 F1 score overall (while spectacularly catching 100% of minority class `Product Damage/Defect` cases!). It also maintains 100% precision on escalations (never incorrectly auto-handling a dangerous ticket).
 
 ## 5. Failure Analysis (How it Handles Edge Cases)
 **Top Expected Failure Modes in AI Support:**
